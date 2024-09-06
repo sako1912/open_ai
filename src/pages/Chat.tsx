@@ -1,27 +1,54 @@
-import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState, useCallback, useEffect } from 'react';
+import OpenAI from 'openai';
 
 const Chat = () => {
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState<string>('');
     const [response, setResponse] = useState('');
+    const [openai, setOpenai] = useState<OpenAI | null>(null);
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await axios.post('http://localhost:5000/api/chat', { message });
-            setResponse(res.data.choices[0].message.content);
-        } catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.error('Axios 오류:', error.message);
-                if (error.response) {
-                    console.error('응답 데이터:', error.response.data);
-                    console.error('응답 상태:', error.response.status);
-                }
-            } else {
-                console.error('알 수 없는 오류:', error);
-            }
+    useEffect(() => {
+        const key = process.env.REACT_APP_OPENAI_API_KEY;
+        if (key) {
+            setOpenai(new OpenAI({ apiKey: key, dangerouslyAllowBrowser: true }));
         }
-    };
+    }, []);
+
+    //chunk object -stream
+    // const handleSubmit = useCallback(
+    //     async (e: React.FormEvent) => {
+    //         e.preventDefault();
+    //         if (!openai) return;
+
+    //         let fullResponse = '';
+    //         const stream = await openai.chat.completions.create({
+    //             model: 'gpt-4o-mini',
+    //             messages: [{ role: 'user', content: message }],
+    //             stream: true,
+    //         });
+    //         for await (const chunk of stream) {
+    //             const content = chunk.choices[0]?.delta?.content || '';
+    //             fullResponse += content;
+    //             setResponse(fullResponse); // 상태 업데이트
+    //         }
+    //     },
+    //     [message, openai]
+    // );
+
+    //completion object
+    const handleSubmit = useCallback(
+        async (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!openai) return;
+
+            const res = await openai.chat.completions.create({
+                model: 'gpt-4o-mini',
+                messages: [{ role: 'user', content: message }],
+            });
+            const content = res.choices[0]?.message?.content || '';
+            setResponse(content); // 상태 업데이트
+        },
+        [message, openai]
+    );
 
     return (
         <div>
