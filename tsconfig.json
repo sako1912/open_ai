@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "module": "commonjs", // Node.js와 호환되도록 commonjs 모듈 시스템 사용
+        "esModuleInterop": true, // ES 모듈과의 호환성을 위해 설정
+        "target": "es6", // 또는 그 이상
+        "moduleResolution": "node",
+        "outDir": "./dist", // 선택 사항: 컴파일된 파일의 출력 디렉터리
+        "sourceMap": true,
+        "strict": true,
+        "jsx": "react"
+    },
+    "include": ["src"],
+    "exclude": ["node_modules"]
+}
